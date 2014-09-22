@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{50730572-FA49-496A-AAF5-F9E487AF4F57}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Jumoo.uSync.Core</RootNamespace>
+    <AssemblyName>Jumoo.uSync.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="businesslogic">
+      <HintPath>..\References\7.1.6\businesslogic.dll</HintPath>
+    </Reference>
+    <Reference Include="cms">
+      <HintPath>..\References\7.1.6\cms.dll</HintPath>
+    </Reference>
+    <Reference Include="interfaces">
+      <HintPath>..\References\7.1.6\interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\7.1.6\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="umbraco">
+      <HintPath>..\References\7.1.6\umbraco.dll</HintPath>
+    </Reference>
+    <Reference Include="Umbraco.Core">
+      <HintPath>..\References\7.1.6\Umbraco.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="umbraco.DataLayer">
+      <HintPath>..\References\7.1.6\umbraco.DataLayer.dll</HintPath>
+    </Reference>
+    <Reference Include="umbraco.providers">
+      <HintPath>..\References\7.1.6\umbraco.providers.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Extensions\LegacyMediaTypeExtensions.cs" />
+    <Compile Include="Extensions\XElementExtensions.cs" />
+    <Compile Include="Helpers\ChangeTracker.cs" />
+    <Compile Include="Helpers\ContentWalker.cs" />
+    <Compile Include="Helpers\MediaWalker.cs" />
+    <Compile Include="Helpers\NodeIdMapper.cs" />
+    <Compile Include="Helpers\uSyncXml.cs" />
+    <Compile Include="Models\IUSyncCoreBase.cs" />
+    <Compile Include="Models\uSyncContentType.cs" />
+    <Compile Include="Models\uSyncDataType.cs" />
+    <Compile Include="Models\uSyncDictionary.cs" />
+    <Compile Include="Models\uSyncIContentBase.cs" />
+    <Compile Include="Models\uSyncLanguage.cs" />
+    <Compile Include="Models\uSyncMacro.cs" />
+    <Compile Include="Models\uSyncMedia.cs" />
+    <Compile Include="Models\uSyncMediaType.cs" />
+    <Compile Include="Models\uSyncResult.cs" />
+    <Compile Include="Models\uSyncStylesheet.cs" />
+    <Compile Include="Models\uSyncTemplate.cs" />
+    <Compile Include="Models\uSyncContent.cs" />
+    <Compile Include="uSyncCoreSettings.cs" />
+    <Compile Include="uSyncEngine.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>CALL $(SolutionDir)\ToUmbracoInstall.cmd "$(TargetFileName)" "bin"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
