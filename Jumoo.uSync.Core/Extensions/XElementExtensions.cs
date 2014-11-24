@@ -12,37 +12,11 @@ namespace Jumoo.uSync.Core.Extensions
 {
     public static class XElementExtensions
     {
-        public static void AddMD5Hash(this XElement node)
-        {
-            node.AddMD5Hash(false);
-        }
-
-        public static void AddMD5Hash(this XElement node, bool removePreValIds)
-        {
-            string md5 = "";
-            md5 = CalculateMD5Hash(node, removePreValIds);
-            node.Add(new XElement("Hash", md5));
-        }
-
-        public static void AddMD5Hash(this XElement node, string val)
-        {
-            string md5 = CalculateMD5Hash(val);
-            node.Add(new XElement("Hash", md5));
-        }
-
-        public static string GetUSyncMD5Hash(this XElement node)
-        {
-            XElement hashNode = node.Element("Hash");
-            if (hashNode == null)
-                return "";
-
-            return hashNode.Value; 
-        }
-
         public static string CalculateMD5Hash(this XElement node, bool removePreValIds)
         {
             if (removePreValIds)
             {
+                // prevalues (in datatypes)
                 XElement nodeCopy = new XElement(node);
                 var preValRoot = nodeCopy.Element("PreValues");
                 if (preValRoot != null && preValRoot.HasElements)
@@ -52,12 +26,43 @@ namespace Jumoo.uSync.Core.Extensions
                         preValue.SetAttributeValue("Id", "");
                     }
                 }
+
+                // nodes (from x)
+                var nodes = nodeCopy.Element("Nodes");
+                if ( nodes != null)
+                {
+                    nodes.Remove();
+                }
+
+                // tab ids (from doctypes)
+                var tabs = nodeCopy.Element("Tabs");
+                if (tabs != null && tabs.HasElements)
+                {
+                    foreach(var t in tabs.Elements("Tab"))
+                    {
+                        if ( t.Element("Id") != null )
+                            t.Element("Id").Remove();
+                    }
+                }
+
                 return CalculateMD5Hash(nodeCopy);
             }
             else
             {
                 return CalculateMD5Hash(node);
             }
+        }
+
+        public static string CalculateMD5Hash(this XElement node, string[] values)
+        {
+            var hashstring = "";
+            foreach(var val in values)
+            {
+                var i = node.Element(val);
+                if (i != null)
+                    hashstring += i.ToString(SaveOptions.DisableFormatting);
+            }
+            return CalculateMD5Hash(hashstring);
         }
 
         private static string CalculateMD5Hash(this XElement node)

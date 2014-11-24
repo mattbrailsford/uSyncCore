@@ -78,7 +78,6 @@ namespace Jumoo.uSync.Core.Models
             var _packagingService = ApplicationContext.Current.Services.PackagingService;
 
             XElement node = _packagingService.Export(item);
-            node.AddMD5Hash(true);
             // substitue.
             node = ReplaceCotentNodes(node);
 

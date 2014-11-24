@@ -42,7 +42,6 @@ namespace Jumoo.uSync.Core.Models
             xmlDoc.AppendChild(item.ToXml(xmlDoc));
 
             XElement node = xmlDoc.ToXElement();
-            node.AddMD5Hash();
 
             return node;            
         }

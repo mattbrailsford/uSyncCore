@@ -91,14 +91,17 @@ namespace Jumoo.uSync.BackOffice
             }
         }
 
-        public static void SaveToDisk(IContentType item)
+        public static void SaveToDisk(IContentType item, string root = null)
         {
             if (item != null)
             {
                 try
                 {
+                    if (string.IsNullOrEmpty(root))
+                        root = uSyncBackOfficeSettings.Folder;
+
                     var xml = _engine.ContentType.Export((ContentType)item);
-                    uSyncIO.SaveXmlToDisk(xml, ItemSavePath(item), "def", "DocumentType"); 
+                    uSyncIO.SaveXmlToDisk(xml, ItemSavePath(item), "def", "DocumentType", root); 
                 }
                 catch( Exception ex)
                 {
@@ -110,7 +113,7 @@ namespace Jumoo.uSync.BackOffice
         /// <summary>
         ///  works out the save path for a contenttype.
         /// </summary>
-        private static string ItemSavePath(IContentType item)
+        public static string ItemSavePath(IContentType item)
         {
             string path = "";
             if ( item != null)

@@ -91,8 +91,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>CALL $(SolutionDir)\ToUmbracoInstall.cmd "$(TargetFileName)" "bin"
-CALL $(SolutionDir)\ToUmbracoInstall.cmd "$(ProjectDir)usync.config" "config\usync.config"</PostBuildEvent>
+    <PostBuildEvent>CALL $(SolutionDir)ToUmbracoInstall.cmd "$(TargetPath)" "bin"
+CALL $(SolutionDir)ToUmbracoInstall.cmd "$(ProjectDir)usync.config" "config\usync.config"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

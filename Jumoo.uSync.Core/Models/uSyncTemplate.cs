@@ -78,8 +78,6 @@ namespace Jumoo.uSync.Core.Models
                     }
                 }
             }
-            node.AddMD5Hash(item.Alias + item.Name);
-
             return node;
         }
 

@@ -14,5 +14,5 @@ REM
 
 SET UmbracoPath=D:\Development\Web\Umbraco\DevUmbraco7.1.6
 ECHO Copying File %1 to "%UmbracoPath%\%2"
-XCOPY %1 "%UmbracoPath%\%2" /y /i /q > NUL
+ECHO F|XCOPY %1 "%UmbracoPath%\%2" /y /i /q > NUL
 

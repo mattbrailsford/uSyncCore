@@ -41,7 +41,7 @@ namespace Jumoo.uSync.Core.Helpers
 
         public static bool DataTypeChanged(XElement node)
         {
-            string fileHash = node.GetUSyncMD5Hash();
+            string fileHash = node.CalculateMD5Hash(true);
             if ( string.IsNullOrWhiteSpace(fileHash))
                 return true;
 
@@ -61,23 +61,23 @@ namespace Jumoo.uSync.Core.Helpers
                 foreach(var dtype in _dataTypeService.GetAllDataTypeDefinitions())
                 {
                     _dataTypes.Add(dtype.Key, dtype);
-                }
+                }            
             }
-
-            if ( _packagingService == null )
-                _packagingService = ApplicationContext.Current.Services.PackagingService;
-
 
             Guid defGuid = new Guid(defId.Value);
             if (!_dataTypes.ContainsKey(defGuid))
                 return true;
 
             var item = _dataTypes[defGuid];
-            XElement export = _packagingService.Export(item, false);
-            if (export == null)
-                return true;
+            if (item == null)
+                return true; 
 
-            string dbHash = export.CalculateMD5Hash(true);
+            var uDt = new uSyncDataType();
+            var dbNode = uDt.Export(item);
+            if (dbNode == null)
+                return true; 
+
+            string dbHash = dbNode.CalculateMD5Hash(true);
 
             LogHelper.Debug<ChangeTracker>("Comparing: [{0}] to [{1}]",
                 () => fileHash, () => dbHash);
@@ -87,7 +87,7 @@ namespace Jumoo.uSync.Core.Helpers
 
         public static bool ContentTypeChanged(XElement node)
         {
-            string fileHash = node.GetUSyncMD5Hash();
+            string fileHash = node.CalculateMD5Hash(false);
             if (string.IsNullOrWhiteSpace(fileHash))
                 return true;
 
@@ -118,7 +118,8 @@ namespace Jumoo.uSync.Core.Helpers
 
         public static bool StylesheetChanged(XElement node)
         {
-            string fileHash = node.GetUSyncMD5Hash();
+            var hashProps = new string[] { "Name", "FileName", "Properties" };
+            string fileHash = node.CalculateMD5Hash(hashProps);
             if (string.IsNullOrWhiteSpace(fileHash))
                 return true;
 
@@ -126,15 +127,17 @@ namespace Jumoo.uSync.Core.Helpers
             if (name == null)
                 return true;
 
-            var legacyItem = StyleSheet.GetByName(name.Value);
-            if (legacyItem == null)
+            if (_fileService == null)
+                _fileService = ApplicationContext.Current.Services.FileService;
+
+            var item = _fileService.GetStylesheetByName(name.Value);
+
+            if ( item == null ) 
                 return true;
 
-            XmlDocument xmlDoc = uSyncXml.CreateXmlDoc();
-            xmlDoc.AppendChild(legacyItem.ToXml(xmlDoc));
-            XElement dbNode = xmlDoc.ToXElement();
-
-            var dbHash = dbNode.CalculateMD5Hash(false);
+            var uStyle = new uSyncStylesheet();
+            var dbNode = uStyle.Export(item);
+            var dbHash = dbNode.CalculateMD5Hash(hashProps);
 
             LogHelper.Debug<ChangeTracker>("Comparing: [{0}] to [{1}]",
                 () => fileHash, () => dbHash);
@@ -144,7 +147,8 @@ namespace Jumoo.uSync.Core.Helpers
 
         public static bool TemplateChanged(XElement node)
         {
-            string fileHash = node.GetUSyncMD5Hash();
+            var hashProps = new string[] { "Name", "Alias", "Master" };
+            string fileHash = node.CalculateMD5Hash(hashProps);
             if (string.IsNullOrWhiteSpace(fileHash))
                 return true;
 
@@ -159,8 +163,9 @@ namespace Jumoo.uSync.Core.Helpers
             if (item == null)
                 return true;
 
-            string vals = item.Alias + item.Name;
-            string dbHash = XElementExtensions.CalculateMD5Hash(vals);
+            var uT = new uSyncTemplate();
+            var dbNode = uT.Export(item);
+            string dbHash = dbNode.CalculateMD5Hash(hashProps);
 
             LogHelper.Debug<ChangeTracker>("Comparing: [{0}] to [{1}]",
                 () => fileHash, () => dbHash);

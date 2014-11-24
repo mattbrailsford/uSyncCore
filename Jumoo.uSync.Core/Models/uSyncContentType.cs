@@ -196,11 +196,7 @@ namespace Jumoo.uSync.Core.Models
             // do the comparison for speed.
             //
             XElement node = ContentTypeFullExport(item);
-            
-            // we add the hash here...
-            if ( node != null )
-                node.AddMD5Hash(false);
-
+        
             return node;
         }
 

@@ -19,21 +19,21 @@ namespace Jumoo.uSync.BackOffice.Helpers
     /// </summary>
     public class uSyncIO
     {
-        public static void SaveXmlToDisk(XElement node, string path, string filename, string itemType)
+        public static void SaveXmlToDisk(XElement node, string path, string filename, string itemType, string root)
         {
             var filepath = string.Format("{0}\\{1}\\{2}.config", itemType, path, ScrubFileName(filename));
-            SaveXmlToDisk(node, filepath);
+            SaveXmlToDisk(node, filepath, root);
         }
 
-        public static void SaveXmlToDisk(XElement node, string path, string filename)
+        public static void SaveXmlToDisk(XElement node, string path, string filename, string root)
         {
             var filepath = string.Format("{0}\\{1}.config", path, ScrubFileName(filename));
-            SaveXmlToDisk(node, filepath);
+            SaveXmlToDisk(node, filepath, root);
         }
 
-        public static void SaveXmlToDisk(XElement node, string path)
+        public static void SaveXmlToDisk(XElement node, string path, string root)
         {
-            string targetFile = GetPhysicalFilePath(path);
+            string targetFile = GetPhysicalFilePath(path, root);
             string folder = Path.GetDirectoryName(targetFile);
 
             LogHelper.Info<uSyncIO>("Saving {0}", () => targetFile);
@@ -57,9 +57,9 @@ namespace Jumoo.uSync.BackOffice.Helpers
             node.Save(targetFile);
         }
 
-        public static string GetPhysicalFilePath(string path)
+        public static string GetPhysicalFilePath(string path, string root)
         {
-            return Path.Combine(uSyncBackOfficeSettings.Folder, path.Trim('\\'));
+            return Path.Combine(root, path.Trim('\\'));
         }
 
         public static string ScrubFileName(string filename)
