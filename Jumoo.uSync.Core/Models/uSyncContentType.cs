@@ -54,7 +54,7 @@ namespace Jumoo.uSync.Core.Models
 
             ImportContainerTypes(item, node);
             ImportStructure(item, node);
-            ImportRemoveMissingProperties(item, node);
+            ImportUpdateAndRemoveMissingProperties(item, node);
             ImportTabSortOrder(item, node);
 
             _contentTypeService.Save(item);
@@ -107,7 +107,7 @@ namespace Jumoo.uSync.Core.Models
 
         }
 
-        private void ImportRemoveMissingProperties(ContentType item, XElement node)
+        private void ImportUpdateAndRemoveMissingProperties(ContentType item, XElement node)
         {
             List<string> propertiesToRemove = new List<string>();
             Dictionary<string, string> propertiesToMove = new Dictionary<string, string>();
@@ -138,29 +138,51 @@ namespace Jumoo.uSync.Core.Models
                     var _dataTypeService = ApplicationContext.Current.Services.DataTypeService;
                     var dataTypeDefinition = _dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias(editorAlias).FirstOrDefault();
 
-                    property.Name = propertyNode.Element("Name").Value;
-                    property.Description = propertyNode.Element("Description").Value;
+                    if ( propertyNode.Element("Name") != null )
+                        property.Name = propertyNode.Element("Name").Value;
+
+                    if (propertyNode.Element("Description") != null)
+                        property.Description = propertyNode.Element("Description").Value;
+
+                    if (propertyNode.Element("Mandatory") != null)
                     property.Mandatory = propertyNode.Element("Mandatory").Value.ToLowerInvariant().Equals("true");
-                    property.ValidationRegExp = propertyNode.Element("Validation").Value;
 
-                    XElement sortOrder = propertyNode.Element("SortOrder");
-                    if (sortOrder != null)
-                        property.SortOrder = int.Parse(sortOrder.Value);
+                    if (propertyNode.Element("Validation") != null)
+                        property.ValidationRegExp = propertyNode.Element("Validation").Value;
 
-                    var tab = propertyNode.Element("Tab").Value;
-                    if (!string.IsNullOrEmpty(tab))
+
+                    if (propertyNode.Element("SortOrder") != null)
+                        property.SortOrder = int.Parse(propertyNode.Element("SortOrder").Value);
+
+                    if (propertyNode.Element("Tab") != null)
                     {
-                        var propGroup = item.PropertyGroups.First(x => x.Name == tab);
-
-                        if (!propGroup.PropertyTypes.Any(x => x.Alias == property.Alias))
+                        var tab = propertyNode.Element("Tab").Value;
+                        if (!string.IsNullOrEmpty(tab))
                         {
-                            // if it's not in this prop group - we can move it it into it
-                            LogHelper.Debug<uSyncContentType>("Moving {0} in {1} to {2}",
-                                () => property.Alias, () => item.Name, () => tab);
-                            propertiesToMove.Add(property.Alias, tab);
+                            var propGroup = item.PropertyGroups.First(x => x.Name == tab);
+
+                            if (!propGroup.PropertyTypes.Any(x => x.Alias == property.Alias))
+                            {
+                                // if it's not in this prop group - we can move it it into it
+                                LogHelper.Debug<uSyncContentType>("Moving {0} in {1} to {2}",
+                                    () => property.Alias, () => item.Name, () => tab);
+                                propertiesToMove.Add(property.Alias, tab);
+                            }
                         }
                     }
                 }
+            }
+
+            // moving things has to happen outside the loop as you
+            // are chaning collection
+            foreach(var move in propertiesToMove)
+            {
+                item.MovePropertyType(move.Key, move.Value);
+            }
+
+            foreach(var delete in propertiesToRemove)
+            {
+                item.RemovePropertyType(delete);
             }
         }
 
@@ -239,6 +261,9 @@ namespace Jumoo.uSync.Core.Models
                         tabNode.Add(new XElement("SortOrder", tab.SortOrder));
                 }
 
+                node = ExportProperties(item, node);
+
+                /*
                 // sort order on properties
                 var properties = node.Element("GenericProperties");
                 foreach(var prop in item.PropertyTypes)
@@ -248,7 +273,67 @@ namespace Jumoo.uSync.Core.Models
                     if (propNode != null)
                         propNode.Add(new XElement("SortOrder", prop.SortOrder));
                 }
+                 */
             }
+            return node;
+        }
+
+        /// <summary>
+        ///  exporting property types, if we don't specifiy an order to export them in
+        ///  then our change tracking at the other end can go odd. so we always export 
+        ///  them in name order. 
+        /// </summary>
+        /// <returns></returns>
+        internal static XElement ExportProperties(ContentType item, XElement node)
+        {
+            var props = node.Element("GenericProperties");
+            if (props == null)
+                return node;
+
+            props.RemoveAll();
+
+            foreach(var property in item.PropertyTypes.OrderBy(x => x.Name))
+            {
+                XElement prop = new XElement("GenericProperty");
+
+                if (property.Name != null)
+                    prop.Add(new XElement("Name", property.Name));
+
+                if (property.Alias != null)
+                    prop.Add(new XElement("Alias", property.Alias));
+
+                if (property.DataTypeDefinitionId > 0)
+                {
+                    var _dataTypeService = ApplicationContext.Current.Services.DataTypeService;
+                    var definition = _dataTypeService.GetDataTypeDefinitionById(property.DataTypeDefinitionId);
+
+                    if ( definition != null ) {
+                        prop.Add(new XElement("Definition", definition.Key));
+                    }
+                }
+
+                prop.Add(new XElement("Type", property.PropertyEditorAlias));
+
+                var tab = item.PropertyGroups.Where(x => x.PropertyTypes.Contains(property)).FirstOrDefault();
+                // var tab = item.PropertyGroups.Where(x => x.Id == property.p).FirstOrDefault();
+                if (tab != null)
+                    prop.Add(new XElement("Tab", tab.Name));
+                else
+                    prop.Add(new XElement("Tab", ""));
+
+                prop.Add(new XElement("Mandatory", property.Mandatory));
+
+                if (property.ValidationRegExp != null)
+                    prop.Add(new XElement("Validation", property.ValidationRegExp));
+
+                if (property.Description != null)
+                    prop.Add(new XElement("Description", new XCData(property.Description)));
+
+                prop.Add(new XElement("SortOrder", property.SortOrder));
+
+                props.Add(prop);
+            }
+
             return node;
         }
    }
